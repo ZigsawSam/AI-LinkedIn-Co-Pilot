@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AI Post Generator</title>
+  <style>
+    body { width: 380px; padding: 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background-color: #f4f4f4; }
+    h2 { color: #0a66c2; margin-top: 0; font-size: 18px; text-align: center; }
+    .section { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    label { font-weight: 600; font-size: 13px; color: #333; display: block; margin-bottom: 5px; }
+    input, select, textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd; box-sizing: border-box; font-size: 14px; }
+    textarea { height: 150px; margin-top: 10px; background-color: #f9f9f9; }
+    button { width: 100%; padding: 12px; background: #0a66c2; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-top: 10px; transition: background-color 0.2s; }
+    button:hover { background: #004182; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .button-group { display: flex; gap: 10px; }
+    #status { padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 13px; text-align: center; display: none; }
+    .info { background: #e7f3ff; color: #004182; }
+    .error { background: #ffe7e7; color: #d11124; }
+    .success { background: #e7f7e7; color: #057642; }
+    .loader { border: 3px solid #f3f3f3; border-top: 3px solid #0a66c2; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <h2>AI LinkedIn Post Generator</h2>
+
+  <div class="section">
+    <label for="apiKey">Your API Key:</label>
+    <input type="password" id="apiKey" placeholder="Enter your API key">
+  </div>
+
+  <div class="section">
+    <label for="apiProvider">Choose API Provider:</label>
+    <select id="apiProvider">
+      <option value="openai">OpenAI</option>
+      <option value="gemini">Gemini</option>
+    </select>
+  </div>
+
+  <div class="section">
+    <label for="tone">Select a Tone:</label>
+    <select id="tone">
+      <option value="Professional & Insightful">Professional & Insightful</option>
+      <option value="Inspirational & Story-driven">Inspirational & Story-driven</option>
+      <option value="Technical & Data-driven">Technical & Data-driven</option>
+      <option value="Witty & Humorous">Witty & Humorous</option>
+      <option value="Subtle Desi & Witty">Subtle Desi & Witty</option>
+    </select>
+    <button id="generateBtn">Generate Post</button>
+  </div>
+ 
+  <div class="section" id="result-container" style="display: none;">
+    <label>Generated Post:</label>
+    <textarea id="postContent" readonly></textarea>
+    <div class="button-group">
+      <button id="regenerateBtn">🔄 Regenerate</button>
+      <button id="copyBtn">📋 Copy Post</button>
+    </div>
+  </div>
+
+  <div id="status"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
