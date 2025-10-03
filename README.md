@@ -1,33 +1,27 @@
-# 🚀 AI LinkedIn Post Generator Pro  
+# AI LinkedIn Post Generator Pro v2.0
 
-A Chrome extension that generates **authentic, viral-worthy LinkedIn posts** using **OpenAI** or **Google Gemini**, crafted from your LinkedIn profile.  
+Generate professional, human-like LinkedIn posts using AI (OpenAI or Gemini).
 
-✨ Forget writer’s block — get posts that match your **profession**, **About section**, and your **chosen tone** in seconds.  
+## Features
+- Extracts your LinkedIn profile info automatically.
+- Generates posts with different tones: professional, story-driven, witty, or subtle desi humor.
+- Regenerate posts or copy to clipboard.
+- Save your API key for easy reuse.
 
----
+## Installation
+1. Clone or download this repo.
+2. Open Chrome → `chrome://extensions/`
+3. Enable **Developer mode** (top-right)
+4. Click **Load unpacked** → select this folder.
 
-## 🌟 Features
-- 🔎 Scrapes your LinkedIn profile **headline** and **About** section  
-- 🧠 Supports **OpenAI GPT** and **Google Gemini API**  
-- 🎭 Multiple tones:  
-  - Professional & Insightful  
-  - Inspirational & Story-driven  
-  - Technical & Data-driven  
-  - Witty & Humorous  
-  - Subtle Desi & Witty  
-- ⚡ One-click **Generate**, **Regenerate**, and **Copy to Clipboard**  
-- 🔒 Saves your API key securely in Chrome storage  
+## Usage
+1. Open any LinkedIn profile.
+2. Click the extension icon.
+3. Enter your OpenAI or Gemini API key.
+4. Choose API provider, tone, and optional topic.
+5. Click **Generate Post**.
+6. Copy or regenerate the post as needed.
 
----
-
-## 🚀 Installation (For Developers)  
-1. Clone this repo:
-   ```bash
-   git clone https://github.com/ZigsawSam/linkedin-ai-post-generator.git
-   cd linkedin-ai-post-generator
-
-2. Open Chrome → visit chrome://extensions/
-
-3. Enable Developer Mode (top right corner)
-
-4. Click Load unpacked → select the project folder
+## Notes
+- Requires a valid API key from [OpenAI](https://platform.openai.com/) or [Gemini](https://developers.generativeai.google/).
+- LinkedIn page must be open to extract profile info.
