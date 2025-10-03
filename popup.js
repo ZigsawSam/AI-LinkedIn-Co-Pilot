@@ -5,101 +5,101 @@ document.addEventListener('DOMContentLoaded', () => {
   const regenerateBtn = document.getElementById('regenerateBtn');
   const copyBtn = document.getElementById('copyBtn');
   const toneSelect = document.getElementById('tone');
+  const topicInput = document.getElementById('topic');
   const statusDiv = document.getElementById('status');
   const resultContent = document.getElementById('postContent');
   const resultContainer = document.getElementById('result-container');
 
   let lastProfileData = null;
 
-  // ---------------- Core Prompt Logic ----------------
-  function buildPrompt(profileData) {
-    return `
-You are a world-class LinkedIn content strategist and ghostwriter. Your mission: craft an **original, human-like LinkedIn post** that is insightful, relatable, and highly engaging.
+  const buildPrompt = (profileData, topic) => {
+    const coreRules = `
+You are a world-class LinkedIn content strategist. Write a natural, human-like LinkedIn post for the user.
 
-**User Profile Data:**
-- Profession / Headline: "${profileData.profession}"
-- About Section: "${profileData.about}"
-- Selected Tone: "${toneSelect.value}"
-
-**Rules:**
-- Word count: 50–80 words
-- Hook readers immediately
-- Deliver one memorable insight
-- Strictly maintain the selected tone and first-person voice
-- End with a question to boost engagement
-- Include 3–5 contextually relevant hashtags
+**Guidelines:**
+- Use a conversational, authentic tone.
+- Keep it concise (60–100 words), but don’t force word count.
+- Start with a relatable thought, story, or question.
+- Write in first-person shaped by user’s profession and About section.
+- Follow selected tone: ${toneSelect.value}.
+- End with an open-ended thought or question.
+- Include 2–4 relevant hashtags naturally.
 `;
-  }
 
-  // ---------------- API Calls ----------------
+    let taskPrompt;
+    if (topic && topic.trim().length > 0) {
+      taskPrompt = `
+**Task:** Write a LinkedIn post about "${topic}" based on:
+
+- Profession / Headline: "${profileData.profession}"
+- About: "${profileData.about}"
+`;
+    } else {
+      taskPrompt = `
+**Task:** Write a general LinkedIn post inspired by:
+
+- Profession / Headline: "${profileData.profession}"
+- About: "${profileData.about}"
+`;
+    }
+
+    return coreRules + taskPrompt;
+  };
+
   async function callOpenAI(apiKey, prompt) {
-    const API_URL = 'https://api.openai.com/v1/chat/completions';
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 25000);
 
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: 250,
-          temperature: 0.75
-        }),
-        signal: controller.signal
-      });
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 300,
+        temperature: 0.8
+      }),
+      signal: controller.signal
+    });
 
-      clearTimeout(timeoutId);
+    clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData?.error?.message || `OpenAI error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.choices[0].message.content.trim();
-    } catch (err) {
-      clearTimeout(timeoutId);
-      throw err;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData?.error?.message || `OpenAI error: ${response.status}`);
     }
+
+    const data = await response.json();
+    return data.choices[0].message.content.trim();
   }
 
   async function callGemini(apiKey, prompt) {
-    const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 25000);
 
-    try {
-      const response = await fetch(GEMINI_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey
-        },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        }),
-        signal: controller.signal
-      });
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey
+      },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      signal: controller.signal
+    });
 
-      clearTimeout(timeoutId);
+    clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData?.error?.message || `Gemini error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const first = data.candidates?.[0];
-      return first?.content?.parts?.[0]?.text?.trim() || '';
-    } catch (err) {
-      clearTimeout(timeoutId);
-      throw err;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData?.error?.message || `Gemini error: ${response.status}`);
     }
+
+    const data = await response.json();
+    const first = data.candidates?.[0];
+    return first?.content?.parts?.[0]?.text?.trim() || '';
   }
 
   async function getAIPost(profileData) {
@@ -110,29 +110,19 @@ You are a world-class LinkedIn content strategist and ghostwriter. Your mission:
     }
 
     const provider = apiProviderSelect.value;
-    const prompt = buildPrompt(profileData);
+    const prompt = buildPrompt(profileData, topicInput.value);
 
-    if (provider === 'openai') {
-      return await callOpenAI(apiKey, prompt);
-    } else if (provider === 'gemini') {
-      return await callGemini(apiKey, prompt);
-    } else {
-      throw new Error('Unsupported provider selected.');
-    }
+    if (provider === 'openai') return await callOpenAI(apiKey, prompt);
+    if (provider === 'gemini') return await callGemini(apiKey, prompt);
+    throw new Error('Unsupported provider selected.');
   }
 
-  // ---------------- UI Helpers ----------------
   function setLoadingState(isLoading) {
     generateBtn.disabled = isLoading;
     regenerateBtn.disabled = isLoading;
-    if (isLoading) {
-      statusDiv.style.display = 'block';
-      statusDiv.className = 'info';
-      statusDiv.innerHTML = '<div class="loader"></div> Generating...';
-    } else {
-      statusDiv.style.display = 'none';
-      statusDiv.innerHTML = '';
-    }
+    statusDiv.style.display = isLoading ? 'block' : 'none';
+    statusDiv.className = isLoading ? 'info' : '';
+    statusDiv.innerHTML = isLoading ? '<div class="loader"></div> Generating...' : '';
   }
 
   function updateStatus(message, type) {
@@ -141,15 +131,11 @@ You are a world-class LinkedIn content strategist and ghostwriter. Your mission:
     statusDiv.textContent = message;
   }
 
-  // ---------------- Event Handlers ----------------
   async function handleGeneration() {
     setLoadingState(true);
-
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab.url || !tab.url.includes('linkedin.com')) {
-        throw new Error('Please open a LinkedIn profile page first.');
-      }
+      if (!tab.url.includes('linkedin.com')) throw new Error('Open a LinkedIn profile page first.');
 
       const results = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -157,45 +143,38 @@ You are a world-class LinkedIn content strategist and ghostwriter. Your mission:
       });
 
       lastProfileData = results[0].result;
-      if (!lastProfileData || !lastProfileData.profession) {
-        throw new Error('Could not extract profile data. Please ensure you are on a LinkedIn profile page.');
-      }
+      if (!lastProfileData || !lastProfileData.profession) throw new Error('Could not extract profile data.');
 
       const post = await getAIPost(lastProfileData);
-      if (post) {
-        resultContent.value = post;
-        resultContainer.style.display = 'block';
-        updateStatus('Post generated successfully!', 'success');
-      }
-    } catch (error) {
-      console.error('Generation failed:', error);
-      updateStatus(error.message, 'error');
+      if (!post || post.trim().length < 20) throw new Error('AI did not return a valid post.');
+
+      resultContent.value = post;
+      resultContainer.style.display = 'block';
+      updateStatus('Post generated successfully!', 'success');
+
+    } catch (err) {
+      console.error(err);
+      updateStatus(err.message, 'error');
       resultContainer.style.display = 'none';
     } finally {
       setLoadingState(false);
     }
   }
 
-  regenerateBtn.addEventListener('click', handleGeneration);
   generateBtn.addEventListener('click', handleGeneration);
+  regenerateBtn.addEventListener('click', handleGeneration);
 
   copyBtn.addEventListener('click', () => {
-    resultContent.select();
     navigator.clipboard.writeText(resultContent.value)
       .then(() => updateStatus('Copied to clipboard!', 'success'))
       .catch(() => updateStatus('Could not copy to clipboard.', 'error'));
   });
 
-  // ---------------- API Key Storage ----------------
   apiKeyInput.addEventListener('change', () => {
-    chrome.storage.sync.set({ apiKey: apiKeyInput.value }, () => {
-      updateStatus('API Key saved.', 'success');
-    });
+    chrome.storage.sync.set({ apiKey: apiKeyInput.value }, () => updateStatus('API Key saved.', 'success'));
   });
 
   chrome.storage.sync.get('apiKey', (data) => {
-    if (data.apiKey) {
-      apiKeyInput.value = data.apiKey;
-    }
+    if (data.apiKey) apiKeyInput.value = data.apiKey;
   });
 });
