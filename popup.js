@@ -6,13 +6,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const copyBtn = document.getElementById('copyBtn');
   const toneSelect = document.getElementById('tone');
   const topicInput = document.getElementById('topic');
+  const customProfessionInput = document.getElementById('customProfession');
   const statusDiv = document.getElementById('status');
   const resultContent = document.getElementById('postContent');
   const resultContainer = document.getElementById('result-container');
 
   let lastProfileData = null;
 
+  // ---------------- Prompt Builder ----------------
   const buildPrompt = (profileData, topic) => {
+    const profession = customProfessionInput.value.trim() || profileData.profession;
+
     const coreRules = `
 You are a world-class LinkedIn content strategist. Write a natural, human-like LinkedIn post for the user.
 
@@ -31,14 +35,14 @@ You are a world-class LinkedIn content strategist. Write a natural, human-like L
       taskPrompt = `
 **Task:** Write a LinkedIn post about "${topic}" based on:
 
-- Profession / Headline: "${profileData.profession}"
+- Profession / Headline: "${profession}"
 - About: "${profileData.about}"
 `;
     } else {
       taskPrompt = `
 **Task:** Write a general LinkedIn post inspired by:
 
-- Profession / Headline: "${profileData.profession}"
+- Profession / Headline: "${profession}"
 - About: "${profileData.about}"
 `;
     }
@@ -46,6 +50,7 @@ You are a world-class LinkedIn content strategist. Write a natural, human-like L
     return coreRules + taskPrompt;
   };
 
+  // ---------------- API Calls ----------------
   async function callOpenAI(apiKey, prompt) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 25000);
@@ -117,6 +122,7 @@ You are a world-class LinkedIn content strategist. Write a natural, human-like L
     throw new Error('Unsupported provider selected.');
   }
 
+  // ---------------- UI Helpers ----------------
   function setLoadingState(isLoading) {
     generateBtn.disabled = isLoading;
     regenerateBtn.disabled = isLoading;
@@ -131,6 +137,7 @@ You are a world-class LinkedIn content strategist. Write a natural, human-like L
     statusDiv.textContent = message;
   }
 
+  // ---------------- Event Handlers ----------------
   async function handleGeneration() {
     setLoadingState(true);
     try {
@@ -143,7 +150,7 @@ You are a world-class LinkedIn content strategist. Write a natural, human-like L
       });
 
       lastProfileData = results[0].result;
-      if (!lastProfileData || !lastProfileData.profession) throw new Error('Could not extract profile data.');
+      if (!lastProfileData) throw new Error('Could not extract profile data.');
 
       const post = await getAIPost(lastProfileData);
       if (!post || post.trim().length < 20) throw new Error('AI did not return a valid post.');
