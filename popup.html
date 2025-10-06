@@ -41,13 +41,19 @@
 
   <div class="section">
     <label for="customProfession">Your Profession (Optional):</label>
-    <input type="text" id="customProfession" placeholder="Leave empty to auto-detect from LinkedIn profile">
+    <input type="text" id="customProfession" placeholder="Override auto-detected profession">
   </div>
 
-  <div class="section">
     <label for="topic">Topic (Optional):</label>
     <input type="text" id="topic" placeholder="e.g., 'The future of AI', 'Work-life balance'">
     
+    <label for="length">Select Post Length:</label>
+    <select id="length">
+      <option value="short">Short (approx. 30-50 words)</option>
+      <option value="medium" selected>Medium (approx. 50-80 words)</option>
+      <option value="long">Long (approx. 80-120 words)</option>
+    </select>
+
     <label for="tone">Select a Tone:</label>
     <select id="tone">
       <option value="Professional & Insightful">Professional & Insightful</option>
@@ -58,6 +64,7 @@
     </select>
     <button id="generateBtn">Generate Post</button>
   </div>
+
  
   <div class="section" id="result-container" style="display: none;">
     <label>Generated Post:</label>
