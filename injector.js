@@ -1,4 +1,3 @@
-// Extract profile data from LinkedIn
 function getProfileData() {
   const selectors = {
     professionPrimary: '.pv-text-details__left-panel .text-body-medium',
@@ -9,7 +8,6 @@ function getProfileData() {
 
   const data = {};
 
-  // Profession
   let professionEl = document.querySelector(selectors.professionPrimary);
   if (professionEl && professionEl.textContent) {
     data.profession = professionEl.textContent.trim();
@@ -18,7 +16,6 @@ function getProfileData() {
     data.profession = fb ? fb.textContent.trim() : 'Professional';
   }
 
-  // About section
   let aboutEl = document.querySelector(selectors.aboutPrimary);
   if (aboutEl && aboutEl.textContent) {
     data.about = aboutEl.textContent.trim().substring(0, 400);
