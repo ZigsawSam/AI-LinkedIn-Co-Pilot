@@ -1,29 +1,39 @@
+// This script is injected into the LinkedIn page to extract profile data.
 function getProfileData() {
-  const selectors = {
-    professionPrimary: '.pv-text-details__left-panel .text-body-medium',
-    professionFallback: '.text-body-medium.break-words',
-    aboutPrimary: '#about ~ .display-flex.full-width .pv-shared-text-with-see-more span:first-child',
-    aboutAlt: '#about .pv-about__summary-text span'
+  const data = {
+    profession: 'Professional',
+    about: ''
   };
 
-  const data = {};
+  const selectorsProfession = [
+    'div.pv-text-details__left-panel > span[aria-hidden="true"]',
+    'div.text-body-medium.break-words',
+    'h2.top-card-layout__headline',
+    '[class*="top-card-layout__headline"]'
+  ];
 
-  let professionEl = document.querySelector(selectors.professionPrimary);
-  if (professionEl && professionEl.textContent) {
-    data.profession = professionEl.textContent.trim();
-  } else {
-    const fb = document.querySelector(selectors.professionFallback);
-    data.profession = fb ? fb.textContent.trim() : 'Professional';
+  for (const selector of selectorsProfession) {
+    const el = document.querySelector(selector);
+    if (el && el.textContent.trim()) {
+      data.profession = el.textContent.trim();
+      break;
+    }
   }
 
-  let aboutEl = document.querySelector(selectors.aboutPrimary);
-  if (aboutEl && aboutEl.textContent) {
-    data.about = aboutEl.textContent.trim().substring(0, 400);
-  } else {
-    const alt = document.querySelector(selectors.aboutAlt);
-    data.about = alt && alt.textContent ? alt.textContent.trim().substring(0, 400) : '';
-  }
+  const selectorsAbout = [
+    'section#about div.display-flex span[aria-hidden="true"]',
+    'section#about div span[aria-hidden="true"]',
+    'section[data-section="summary"] div.display-flex span[aria-hidden="true"]'
+  ];
 
+  for (const selector of selectorsAbout) {
+    const el = document.querySelector(selector);
+    if (el && el.textContent.trim()) {
+      data.about = el.textContent.trim().substring(0, 500);
+      break;
+    }
+  }
+  
   return data;
 }
 
