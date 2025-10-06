@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const toneSelect = document.getElementById('tone');
   const topicInput = document.getElementById('topic');
   const customProfessionInput = document.getElementById('customProfession');
+  const lengthSelect = document.getElementById('length');
   const statusDiv = document.getElementById('status');
   const resultContent = document.getElementById('postContent');
   const resultContainer = document.getElementById('result-container');
@@ -14,41 +15,69 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastProfileData = null;
 
   // ---------------- Prompt Builder ----------------
-  const buildPrompt = (profileData, topic) => {
+// This is the only function you need to replace in popup.js
+
+const buildPrompt = (profileData) => {
     const profession = customProfessionInput.value.trim() || profileData.profession;
-
-    const coreRules = `
-You are a world-class LinkedIn content strategist. Write a natural, human-like LinkedIn post for the user.
-
-**Guidelines:**
-- Use a conversational, authentic tone.
-- Keep it concise (60–100 words), but don’t force word count.
-- Start with a relatable thought, story, or question.
-- Write in first-person shaped by user’s profession and About section.
-- Follow selected tone: ${toneSelect.value}.
-- End with an open-ended thought or question.
-- Include 2–4 relevant hashtags naturally.
-`;
-
-    let taskPrompt;
-    if (topic && topic.trim().length > 0) {
-      taskPrompt = `
-**Task:** Write a LinkedIn post about "${topic}" based on:
-
-- Profession / Headline: "${profession}"
-- About: "${profileData.about}"
-`;
-    } else {
-      taskPrompt = `
-**Task:** Write a general LinkedIn post inspired by:
-
-- Profession / Headline: "${profession}"
-- About: "${profileData.about}"
-`;
+    const topic = topicInput.value.trim();
+    
+    // --- THE FIX IS HERE ---
+    // First, we determine the word count instruction string.
+    let wordCountInstruction;
+    switch (lengthSelect.value) {
+      case 'short': wordCountInstruction = 'Strictly adhere to a word count of 30–50 words.'; break;
+      case 'long': wordCountInstruction = 'Strictly adhere to a word count of 80–120 words.'; break;
+      default: wordCountInstruction = 'Strictly adhere to a word count of 50–80 words.'; break;
     }
 
-    return coreRules + taskPrompt;
-  };
+    // The core rules are now more general, without the word count.
+    const coreRules = `
+      You are a world-class LinkedIn content strategist for the brand 'Crumenaa', specializing in culturally-aware content. Your mission is to craft an original, human-like LinkedIn post.
+      **Core Rules:**
+      - Start with a strong, scroll-stopping hook.
+      - Deliver one single, memorable insight.
+      - End with an engaging question.
+      - Include 3–5 relevant hashtags.
+      - Adopt the user's voice based on their profile.
+    `;
+
+    const desiToneMasterclass = `
+      **Masterclass on "Subtle Desi & Witty" Tone:** This tone is about shared professional experiences with a cultural twist. Use relatable desi analogies (like 'jugaad' or 'chai breaks') and light Hinglish professionally. The vibe is warm, clever, and knowing.
+      **Example:** *"In the corporate world, they call it 'agile innovation'. Growing up, we just called it 'jugaad'. The spirit is the same: resourcefulness. What's the best example of jugaad you've seen at work? #Jugaad #Innovation"*
+    `;
+
+    // --- AND THE FIX IS APPLIED HERE ---
+    // The word count instruction is now part of the final, specific task.
+    let taskPrompt;
+    if (topic) {
+      taskPrompt = `
+        **Your Specific Task:**
+        Write a post specifically about the topic: **"${topic}"**.
+        The core insight MUST be about this topic, written from the user's perspective.
+        Strictly adhere to their selected tone.
+        ${wordCountInstruction}
+      `;
+    } else {
+      taskPrompt = `
+        **Your Specific Task:**
+        Write a general insightful post based on the user's professional profile.
+        Find an interesting angle from their profession or "About" section.
+        Strictly adhere to their selected tone.
+        ${wordCountInstruction}
+      `;
+    }
+
+    const finalPrompt = (toneSelect.value === 'Subtle Desi & Witty')
+      ? coreRules + desiToneMasterclass + taskPrompt
+      : coreRules + taskPrompt;
+
+    return finalPrompt + `
+      **User Profile Data:**
+      - Profession / Headline: "${profession}"
+      - About Section: "${profileData.about}"
+      - Selected Tone: "${toneSelect.value}"
+    `;
+};
 
   // ---------------- API Calls ----------------
   async function callOpenAI(apiKey, prompt) {
