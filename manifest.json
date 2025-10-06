@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AI LinkedIn Post Generator Pro",
-  "version": "2.2",
+  "version": "3.0",
   "description": "Generate unique, professional, and human-like LinkedIn posts with AI (OpenAI or Gemini) based on your profile.",
   "permissions": [
     "activeTab",
