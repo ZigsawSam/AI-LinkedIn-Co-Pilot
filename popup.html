@@ -1,80 +1,172 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AI Post Generator</title>
+  <title>AI LinkedIn Co‑Pilot</title>
   <style>
-    body { width: 380px; padding: 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background-color: #f4f4f4; }
-    h2 { color: #0a66c2; margin-top: 0; font-size: 18px; text-align: center; }
-    .section { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    label { font-weight: 600; font-size: 13px; color: #333; display: block; margin-bottom: 5px; }
-    input, select, textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd; box-sizing: border-box; font-size: 14px; }
-    textarea { height: 150px; margin-top: 10px; background-color: #f9f9f9; }
-    button { width: 100%; padding: 12px; background: #0a66c2; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-top: 10px; transition: background-color 0.2s; }
-    button:hover { background: #004182; }
-    button:disabled { background: #ccc; cursor: not-allowed; }
-    .button-group { display: flex; gap: 10px; }
-    #status { padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 13px; text-align: center; display: none; }
-    .info { background: #e7f3ff; color: #004182; }
-    .error { background: #ffe7e7; color: #d11124; }
-    .success { background: #e7f7e7; color: #057642; }
-    .loader { border: 3px solid #f3f3f3; border-top: 3px solid #0a66c2; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 0 auto; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    /* ---------- General ---------- */
+    body {
+      width: 380px;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #e5f0ff, #f4f8ff);
+    }
+    h2 { margin:0; text-align:center; color:#0a66c2; font-size:20px; padding:12px 0; }
+
+    .card {
+      background:#fff;
+      margin:12px;
+      padding:15px;
+      border-radius:10px;
+      box-shadow:0 2px 6px rgba(0,0,0,.08);
+    }
+    label { display:block; margin-bottom:4px; font-weight:600; font-size:13px; color:#333; }
+    input, select, textarea {
+      width:100%; padding:8px; margin-bottom:12px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px; box-sizing:border-box;
+    }
+    textarea { height:140px; background:#f9f9f9; }
+
+    .btn-primary {
+      width:100%; padding:12px; background:#0a66c2; color:#fff; border:none; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer; transition:background .2s;
+    }
+    .btn-primary:hover { background:#004182; }
+    .btn-primary:disabled { background:#bbb; cursor:not-allowed; }
+
+    .btn-group { display:flex; gap:8px; margin-top:8px; }
+    .btn-group button {
+      flex:1; padding:8px; font-size:13px; border:1px solid #cbd5e0; border-radius:6px; background:#f7f7f7; cursor:pointer;
+    }
+    .btn-group button:hover { background:#eaeaea; }
+
+    .tabs { display:flex; border-bottom:1px solid #ddd; margin:0 12px; }
+    .tab { flex:1; text-align:center; padding:10px 0; cursor:pointer; font-weight:600; color:#555; border-bottom:3px solid transparent; }
+    .tab.active { color:#0a66c2; border-bottom-color:#0a66c2; }
+
+    #status { margin:12px; padding:10px; border-radius:6px; font-size:13px; text-align:center; display:none; }
+    .info    { background:#e7f3ff; color:#004182; }
+    .error   { background:#ffe7e7; color:#d11124; }
+    .success { background:#e7f7e7; color:#057642; }
+
+    .loader {
+      border:3px solid #f3f3f3;
+      border-top:3px solid #0a66c2;
+      border-radius:50%;
+      width:20px;height:20px;
+      animation:spin 1s linear infinite;
+      margin:0 auto 8px;
+    }
+    @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+    .panel { display:none; }
+    .panel.active { display:block; }
   </style>
 </head>
 <body>
 
-  <h2>AI LinkedIn Post Generator</h2>
+  <h2>AI Content Co‑Pilot</h2>
 
-  <div class="section">
-    <label for="apiKey">Your API Key:</label>
-    <input type="password" id="apiKey" placeholder="Enter your API key">
+  <!-- ==== TAB SWITCHER ==== -->
+  <div class="tabs">
+    <div class="tab active" data-panel="createPanel">Create Post</div>
+    <div class="tab" data-panel="commentaryPanel">Commentary</div>
   </div>
 
-  <div class="section">
-    <label for="apiProvider">Choose API Provider:</label>
-    <select id="apiProvider">
-      <option value="openai">OpenAI</option>
-      <option value="gemini">Gemini</option>
-    </select>
-  </div>
+  <!-- ==== CREATE POST PANEL ==== -->
+  <div id="createPanel" class="panel active card">
+    <label for="createTopic">Topic (optional)</label>
+    <input type="text" id="createTopic" placeholder="e.g. The future of AI">
 
-  <div class="section">
-    <label for="customProfession">Your Profession (Optional):</label>
-    <input type="text" id="customProfession" placeholder="Override auto-detected profession">
-  </div>
+    <label for="createProfession">Your Profession (optional)</label>
+    <input type="text" id="createProfession" placeholder="Override auto‑detected profession">
 
-    <label for="topic">Topic (Optional):</label>
-    <input type="text" id="topic" placeholder="e.g., 'The future of AI', 'Work-life balance'">
-    
-    <label for="length">Select Post Length:</label>
-    <select id="length">
-      <option value="short">Short (approx. 30-50 words)</option>
-      <option value="medium" selected>Medium (approx. 50-80 words)</option>
-      <option value="long">Long (approx. 80-120 words)</option>
+    <label for="createLength">Post Length</label>
+    <select id="createLength">
+      <option value="short">Short (30‑50 words)</option>
+      <option value="medium" selected>Medium (50‑80 words)</option>
+      <option value="long">Long (80‑120 words)</option>
     </select>
 
-    <label for="tone">Select a Tone:</label>
-    <select id="tone">
+    <label for="createTone">Tone</label>
+    <select id="createTone">
       <option value="Professional & Insightful">Professional & Insightful</option>
-      <option value="Inspirational & Story-driven">Inspirational & Story-driven</option>
-      <option value="Technical & Data-driven">Technical & Data-driven</option>
+      <option value="Inspirational & Story-driven">Inspirational & Story‑driven</option>
+      <option value="Technical & Data-driven">Technical & Data‑driven</option>
       <option value="Witty & Humorous">Witty & Humorous</option>
       <option value="Subtle Desi & Witty">Subtle Desi & Witty</option>
     </select>
-    <button id="generateBtn">Generate Post</button>
-  </div>
 
- 
-  <div class="section" id="result-container" style="display: none;">
-    <label>Generated Post:</label>
-    <textarea id="postContent" readonly></textarea>
-    <div class="button-group">
-      <button id="regenerateBtn">🔄 Regenerate</button>
-      <button id="copyBtn">📋 Copy Post</button>
+    <label for="createProvider">AI Provider</label>
+    <select id="createProvider">
+      <option value="openai">OpenAI (GPT‑4o)</option>
+      <option value="gemini">Google (Gemini 2.5 Flash)</option>
+    </select>
+
+    <label for="createApiKey">API Key</label>
+    <input type="password" id="createApiKey" placeholder="Enter your API key">
+
+    <button id="createGenerateBtn" class="btn-primary">Generate</button>
+
+    <!-- result -->
+    <div id="createResultContainer" style="display:none; margin-top:12px;">
+      <label>Generated Post</label>
+      <textarea id="createResult" readonly></textarea>
+      <div class="btn-group">
+        <button id="createRegenerateBtn">🔄 Regenerate</button>
+        <button id="createCopyBtn">📋 Copy</button>
+      </div>
     </div>
   </div>
 
+  <!-- ==== COMMENTARY PANEL ==== -->
+  <div id="commentaryPanel" class="panel card">
+    <label for="commentArticleUrl">Article URL</label>
+    <input type="text" id="commentArticleUrl" placeholder="Paste a URL to comment on">
+
+    <label for="commentProfession">Your Profession (optional)</label>
+    <input type="text" id="commentProfession" placeholder="Override auto‑detected profession">
+
+    <label for="commentLength">Post Length</label>
+    <select id="commentLength">
+      <option value="short">Short (30‑50 words)</option>
+      <option value="medium" selected>Medium (50‑80 words)</option>
+      <option value="long">Long (80‑120 words)</option>
+    </select>
+
+    <label for="commentTone">Tone</label>
+    <select id="commentTone">
+      <option value="Professional & Insightful">Professional & Insightful</option>
+      <option value="Inspirational & Story-driven">Inspirational & Story‑driven</option>
+      <option value="Technical & Data-driven">Technical & Data‑driven</option>
+      <option value="Witty & Humorous">Witty & Humorous</option>
+      <option value="Subtle Desi & Witty">Subtle Desi & Witty</option>
+    </select>
+
+    <label for="commentProvider">AI Provider</label>
+    <select id="commentProvider">
+      <option value="openai">OpenAI (GPT‑4o)</option>
+      <option value="gemini">Google (Gemini 2.5 Flash)</option>
+    </select>
+
+    <label for="commentApiKey">API Key</label>
+    <input type="password" id="commentApiKey" placeholder="Enter your API key">
+
+    <label for="commentScraperKey">ScrapingBee API Key</label>
+    <input type="password" id="commentScraperKey" placeholder="Enter ScrapingBee key">
+
+    <button id="commentGenerateBtn" class="btn-primary">Generate</button>
+
+    <!-- result -->
+    <div id="commentResultContainer" style="display:none; margin-top:12px;">
+      <label>Generated Commentary</label>
+      <textarea id="commentResult" readonly></textarea>
+      <div class="btn-group">
+        <button id="commentRegenerateBtn">🔄 Regenerate</button>
+        <button id="commentCopyBtn">📋 Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- status -->
   <div id="status"></div>
 
   <script src="popup.js"></script>
